@@ -58,6 +58,10 @@ class Helpers {
         return $arrModalidades;
     }
 
+    private function ordenarPorTaxa($a, $b) {
+        return $a['taxaJuros'] - $b['taxaJuros'];
+    }
+
     static function ofertasFormato($arrOptions) {
         $retornoFormatado = [];
 
@@ -71,10 +75,16 @@ class Helpers {
             $ofertaInfo = Helpers::offerConsult($requisiçãoInfo);
             $ofertaInfoJson = json_decode($ofertaInfo);
 
+            $valorSemJuros = $ofertaInfoJson->valorMax;
+            $taxaDeJuros = $ofertaInfoJson->jurosMes;
+            $quantidadeDeMeses = $ofertaInfoJson->QntParcelaMin;
+            $valorComJuros = $valorSemJuros * pow(1 + $taxaDeJuros, $quantidadeDeMeses);
+            $valorFormatado = number_format($valorComJuros, 2, '.', '');
+
             $ofertaFinal = [
                 'instituicaoFinanceira' => $option["instituicaoFinanceira"],
                 'modalidadeCredito' => $option["modalidadeCredito"],
-                'valorAPagar' => $ofertaInfoJson->valorMax,
+                'valorAPagar' => $valorFormatado,
                 'valorSolicitado' => $ofertaInfoJson->valorMax,
                 'taxaJuros' => $ofertaInfoJson->jurosMes,
                 'qntParcelas' => $ofertaInfoJson->QntParcelaMin
@@ -82,6 +92,13 @@ class Helpers {
 
             array_push ($retornoFormatado, $ofertaFinal);
         }
+
+        $test = usort(
+            $retornoFormatado,
+            function ($a, $b) {
+                return $a['taxaJuros'] - $b['taxaJuros'];
+            }
+        );
 
         return $retornoFormatado;
     }
