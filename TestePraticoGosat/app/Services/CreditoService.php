@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Helpers\Helpers;
 use GuzzleHttp\Client;
+use Illuminate\Support\Collection;
+use App\Models\Simulacao;
 
 class CreditoService {
     static function offersFormatedService($cpf) {
@@ -24,9 +26,13 @@ class CreditoService {
             array_push ($arrOptions, $retorno);
         }
         $arrUnico = array_merge($arrOptions[0], $arrOptions[1]);
-        //return $arrUnico;
 
         $arrRetorno = Helpers::ofertasFormato($arrUnico);
+
+        foreach ($arrRetorno as $offer) {
+            Simulacao::create($offer);
+        }
+
         return $arrRetorno;
     }
 
